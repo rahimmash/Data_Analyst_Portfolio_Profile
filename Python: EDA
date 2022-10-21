@@ -1,0 +1,58 @@
+##Importing Libraries
+import pandas as pd 
+import os 
+import plotly.express as px
+
+
+##Importing Dataset
+data_import = pd.read_csv("netflix_titles.csv")
+data_import["data_added"] = pd.to_datetime(data_import["date_added"].str.strip(), format="%B %d, %Y")
+##data_import
+
+data_import.describe()
+
+data_import["release_year"].hist()
+
+px.histogram(data_import, x= "release_year")
+
+## extract Month From data_added 
+data_import["data_added_month"] = data_import["data_added"].dt.month.fillna(0)
+data_import["data_added_day"] = data_import["data_added"].dt.day.fillna(0)
+
+##Data VIZ
+px.histogram(data_import, x= "data_added", color="data_added_month")
+
+px.histogram(data_import, x= "data_added_month", color="type")
+
+px.histogram(data_import, x= "data_added_day", color="type")
+
+data_import.columns
+
+## Combining and Unpivoting dataset
+country_count = data_import.copy()
+country_count = pd.concat([country_count, data_import['country'].str.split(",", expand = True,)], axis =1)
+country_count = country_count.melt(id_vars=["type", "title"], value_vars=range(12), value_name="Country")
+country_count = country_count[country_count["Country"].notna()]
+country_count["Country"] = country_count["Country"].str.strip()
+country_count
+
+##Data VIZ
+px.histogram(country_count, "Country", color = "type").update_xaxes(categoryorder = "total descending")
+
+##Creating an aggegate sum of a variable
+data_import["Cast Count"] = data_import["cast"].str.split(",")
+data_import = data_import[data_import["Cast Count"].notna()]
+data_import["Cast Count"] = data_import["Cast Count"].apply(lambda x : len(x))
+##data_import
+
+
+##Data VIZ
+px.histogram(data_import, "Cast Count").update_xaxes(categoryorder = "total descending")
+
+data_import["rating"].unique()
+
+px.histogram(data_import, "rating", color = "type").update_xaxes(categoryorder = "total descending")
+
+px.histogram(data_import, "duration", color = "type").update_xaxes(categoryorder = "total descending")
+
+
